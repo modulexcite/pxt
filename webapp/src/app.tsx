@@ -539,14 +539,19 @@ class DocsMenuItem extends data.Component<ISettingsProps, {}> {
     render() {
         const targetTheme = pxt.appTarget.appTheme;
         const sideDocs = !pxt.options.light;
-        return <sui.DropdownMenuItem icon="help" title={lf("Help")}>
-                {targetTheme.docMenu.map(m => <a href={m.path} target="docs" key={"docsmenu" + m.path} role="menuitem" title={m.name} className={`ui item ${sideDocs ? "widedesktop hide" : ""}`}>{m.name}</a>) }
-                {sideDocs ? targetTheme.docMenu.map(m => <sui.Item key={"docsmenuwide" + m.path} role="menuitem" text={m.name} class="widedesktop only" onClick={() => this.openDoc(m.path) } />) : undefined  }
-            </sui.DropdownMenuItem>
+        return <sui.DropdownMenuItem icon="help" title={lf("Help") }>
+            {targetTheme.docMenu.map(m => <a href={m.path} target="docs" key={"docsmenu" + m.path} role="menuitem" title={m.name} className={`ui item ${sideDocs ? "widedesktop hide" : ""}`}>{m.name}</a>) }
+            {sideDocs ? targetTheme.docMenu.map(m => <sui.Item key={"docsmenuwide" + m.path} role="menuitem" text={m.name} class="widedesktop only" onClick={() => this.openDoc(m.path) } />) : undefined  }
+        </sui.DropdownMenuItem>
     }
 }
 
 class SideDocs extends data.Component<ISettingsProps, {}> {
+    public static notify(message: pxsim.SimulatorMessage) {
+        let sd = document.getElementById("sidedocs") as HTMLIFrameElement;
+        if (sd && sd.contentWindow) sd.contentWindow.postMessage(message, "*");
+    }
+
     constructor(props: ISettingsProps) {
         super(props);
     }
@@ -568,7 +573,7 @@ class SideDocs extends data.Component<ISettingsProps, {}> {
     }
 
     popOut() {
-        this.props.parent.notifySideDocs({
+        SideDocs.notify({
             type: "popout"
         })
     }
@@ -877,17 +882,12 @@ export class ProjectView extends data.Component<IAppProps, IAppState> {
         if (e)
             this.editor.setViewState(e.pos)
 
-        this.notifySideDocs({
+        SideDocs.notify({
             type: "fileloaded",
             name: this.editorFile.getName()
         } as pxsim.SimulatorFileLoadedMessage)
 
         if (this.state.showBlocks && this.editor == this.textEditor) this.textEditor.openBlocks();
-    }
-
-    notifySideDocs(message: pxsim.SimulatorMessage) {
-        let sd = document.getElementById("sidedocs") as HTMLIFrameElement;
-        if (sd && sd.contentWindow) sd.contentWindow.postMessage(message, "*");
     }
 
     setFile(fn: pkg.File) {
@@ -1588,23 +1588,23 @@ export class ProjectView extends data.Component<IAppProps, IAppState> {
                         {sandbox ? undefined : <sui.Item class="openproject" role="menuitem" textClass="landscape only" icon="folder open" text={lf("Open Project") } onClick={() => this.openProject() } />}
                         {sandbox ? undefined : <sui.DropdownMenuItem icon='sidebar'>
                             <sui.Item role="menuitem" icon="file outline" text={lf("New Project...") } onClick={() => this.newEmptyProject() } />
-                                    {this.state.header && packages && sharingEnabled ? <sui.Item role="menuitem" text={lf("Embed Project...") } icon="share alternate" onClick={() => this.embed() } /> : null}
-                                    {this.state.header ? <div className="ui divider"></div> : undefined }
-                                    {this.state.header ? <sui.Item role="menuitem" icon="disk outline" text={lf("Add Package...") } onClick={() => this.addPackage() } /> : undefined }
-                                    {this.state.header ? <sui.Item role="menuitem" icon="setting" text={lf("Project Settings...") } onClick={() => this.setFile(pkg.mainEditorPkg().lookupFile("this/pxt.json")) } /> : undefined}
-                                    <div className="ui divider"></div>
-                                    <a className="ui item thin only" href="/docs" role="menuitem" target="_blank">
-                                        <i className="help icon"></i>
-                                        {lf("Help") }
-                                    </a>
-                                    {
-                                        // we always need a way to clear local storage, regardless if signed in or not
-                                    }
-                                    <sui.Item role="menuitem" icon='sign out' text={lf("Reset") } onClick={() => LoginBox.signout() } />
-                                    <div className="ui divider"></div>
-                                    { targetTheme.privacyUrl ? <a className="ui item" href={targetTheme.privacyUrl} role="menuitem" title={lf("Privacy & Cookies") } target="_blank">{lf("Privacy & Cookies") }</a> : undefined }
-                                    { targetTheme.termsOfUseUrl ? <a className="ui item" href={targetTheme.termsOfUseUrl} role="menuitem" title={lf("Terms Of Use") } target="_blank">{lf("Terms Of Use") }</a> : undefined }
-                                    <sui.Item role="menuitem" text={lf("About...") } onClick={() => this.about() } />
+                            {this.state.header && packages && sharingEnabled ? <sui.Item role="menuitem" text={lf("Embed Project...") } icon="share alternate" onClick={() => this.embed() } /> : null}
+                            {this.state.header ? <div className="ui divider"></div> : undefined }
+                            {this.state.header ? <sui.Item role="menuitem" icon="disk outline" text={lf("Add Package...") } onClick={() => this.addPackage() } /> : undefined }
+                            {this.state.header ? <sui.Item role="menuitem" icon="setting" text={lf("Project Settings...") } onClick={() => this.setFile(pkg.mainEditorPkg().lookupFile("this/pxt.json")) } /> : undefined}
+                            <div className="ui divider"></div>
+                            <a className="ui item thin only" href="/docs" role="menuitem" target="_blank">
+                                <i className="help icon"></i>
+                                {lf("Help") }
+                            </a>
+                            {
+                                // we always need a way to clear local storage, regardless if signed in or not
+                            }
+                            <sui.Item role="menuitem" icon='sign out' text={lf("Reset") } onClick={() => LoginBox.signout() } />
+                            <div className="ui divider"></div>
+                            { targetTheme.privacyUrl ? <a className="ui item" href={targetTheme.privacyUrl} role="menuitem" title={lf("Privacy & Cookies") } target="_blank">{lf("Privacy & Cookies") }</a> : undefined }
+                            { targetTheme.termsOfUseUrl ? <a className="ui item" href={targetTheme.termsOfUseUrl} role="menuitem" title={lf("Terms Of Use") } target="_blank">{lf("Terms Of Use") }</a> : undefined }
+                            <sui.Item role="menuitem" text={lf("About...") } onClick={() => this.about() } />
                         </sui.DropdownMenuItem>}
                         {sandbox ? undefined : <DocsMenuItem parent={this} />}
                         {rightLogo ?
@@ -2085,6 +2085,17 @@ $(document).ready(() => {
     window.addEventListener("unload", ev => {
         if (theEditor && !LoginBox.signingOut)
             theEditor.saveSettings()
-    })
-
+    });
+    window.addEventListener("message", ev => {
+        let m = ev.data as pxsim.SimulatorMessage;
+        if (!m) {
+            return;
+        }
+        if (m.type === "sidedocready" && /^http:\/\/localhost/i.test(window.location.href) && Cloud.localToken) {
+            SideDocs.notify({
+                type: "localtoken",
+                localToken: Cloud.localToken
+            } as pxsim.SimulatorDocMessage);
+        }
+    }, false);
 })

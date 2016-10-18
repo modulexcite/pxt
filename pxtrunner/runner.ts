@@ -266,6 +266,12 @@ namespace pxt.runner {
                     window.open(url, "_blank");
                 }
                 break;
+            case "localtoken":
+                let dm = m as pxsim.SimulatorDocMessage;
+                if (dm && dm.localToken) {
+                    Cloud.localToken = dm.localToken;
+                }
+                break;
         }
     }
 
@@ -318,6 +324,8 @@ namespace pxt.runner {
         window.addEventListener("hashchange", () => {
             renderHash();
         }, false);
+
+        parent.postMessage({type: "sidedocready"}, "*");
 
         // delay load doc page to allow simulator to load first
         setTimeout(() => renderHash(), 5000);
